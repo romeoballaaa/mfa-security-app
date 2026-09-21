@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} &middot; MFA Security App{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h1 class="h4 mb-1">{{ title }}</h1>
+                <p class="text-body-secondary small mb-4">{{ description }}</p>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="btn {% if danger %}btn-danger{% else %}btn-primary{% endif %} w-100">
+                        {{ button }}
+                    </button>
+                </form>
+
+                <p class="text-center small mt-3 mb-0">
+                    <a href="{% url 'accounts:profile' %}">Anulo</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -23,7 +23,14 @@
 
                     <dt class="col-5">Hyrja e fundit</dt>
                     <dd class="col-7">{{ user.last_login|date:"d/m/Y H:i" }}</dd>
+                </dl>
+            </div>
+        </div>
 
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h6 mb-3">Siguria</h2>
+                <dl class="row small mb-3">
                     <dt class="col-5">MFA</dt>
                     <dd class="col-7">
                         {% if mfa_enabled %}
@@ -32,10 +39,25 @@
                             <span class="badge text-bg-secondary">Jo aktiv</span>
                         {% endif %}
                     </dd>
+
+                    {% if mfa_enabled %}
+                        <dt class="col-5">Recovery codes</dt>
+                        <dd class="col-7">
+                            {{ recovery_remaining }} të mbetura
+                            {% if recovery_remaining < 3 %}
+                                <span class="badge text-bg-warning ms-1">Pak</span>
+                            {% endif %}
+                        </dd>
+                    {% endif %}
                 </dl>
 
-                {% if not mfa_enabled %}
-                    <a href="{% url 'mfa:setup' %}" class="btn btn-primary btn-sm mt-3">Aktivizo MFA</a>
+                {% if mfa_enabled %}
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{% url 'mfa:regenerate' %}" class="btn btn-outline-primary btn-sm">Rigjenero recovery codes</a>
+                        <a href="{% url 'mfa:disable' %}" class="btn btn-outline-danger btn-sm">Çaktivizo MFA</a>
+                    </div>
+                {% else %}
+                    <a href="{% url 'mfa:setup' %}" class="btn btn-primary btn-sm">Aktivizo MFA</a>
                 {% endif %}
             </div>
         </div>

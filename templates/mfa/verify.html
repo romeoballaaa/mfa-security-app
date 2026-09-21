@@ -19,7 +19,10 @@
                     <button type="submit" class="btn btn-primary w-100 mt-3">Verifiko</button>
                 </form>
 
-                <p class="text-center small mt-3 mb-0">
+                <p class="text-center small mt-3 mb-1">
+                    <a href="{% url 'mfa:recovery' %}">Nuk ke telefonin? Përdor një recovery code</a>
+                </p>
+                <p class="text-center small mb-0">
                     <a href="{% url 'accounts:login' %}">Anulo dhe kthehu te login-i</a>
                 </p>
             </div>

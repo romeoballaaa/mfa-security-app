@@ -9,6 +9,7 @@ from django.views.decorators.cache import never_cache
 from audit.models import SecurityEvent
 from audit.services import record_event
 from mfa.services.challenge import clear_challenge, start_challenge
+from mfa.services.recovery import remaining_recovery_codes
 from mfa.services.totp import user_has_mfa
 
 from .forms import LoginForm, RegistrationForm
@@ -140,12 +141,13 @@ class ProfileView(View):
     template_name = "accounts/profile.html"
 
     def get(self, request):
-        recent_events = request.user.security_events.all()[:10]
+        mfa_enabled = user_has_mfa(request.user)
         return render(
             request,
             self.template_name,
             {
-                "recent_events": recent_events,
-                "mfa_enabled": user_has_mfa(request.user),
+                "recent_events": request.user.security_events.all()[:10],
+                "mfa_enabled": mfa_enabled,
+                "recovery_remaining": remaining_recovery_codes(request.user) if mfa_enabled else 0,
             },
         )

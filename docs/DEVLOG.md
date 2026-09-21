@@ -95,3 +95,12 @@
 - `IndentationError` te `views.py` dhe `forms.py` pas kopjimit të kodit.
 - Faqja e regjistrimit ridrejtonte te Home: përdoruesi ishte i kyçur nga admin (sjellje e qëllimshme).
 - Butoni Back pas logout shfaqte profilin nga cache-i i browser-it; zgjidhur me `never_cache`.
+## Phase 4C — Login me dy faktorë
+
+- Pas fjalëkalimit për user me MFA nuk thirret `login()`; session ruan vetëm gjendjen pre-MFA.
+- `login_required` bllokon çdo faqe të mbrojtur deri te TOTP.
+- Sfida skadon pas 300 s dhe anulohet pas 5 kodesh të gabuara.
+- Replay dhe kod i gabuar: i njëjti mesazh për përdoruesin, `reason` i ndryshëm në audit.
+- `duration_ms`: koha nga fjalëkalimi deri te TOTP-ja e pranuar.
+- Dobësi e gjetur dhe e mbyllur: `/admin/login/` anashkalonte MFA. Ridrejtuar te login-i ynë.
+- Test: pas fjalëkalimit, qasje direkte te profili → ridrejtim te login-i.

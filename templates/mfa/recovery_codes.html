@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Recovery codes &middot; MFA Security App{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h1 class="h4 mb-1">Recovery codes</h1>
+                <p class="text-body-secondary small mb-4">
+                    {% if first_time %}
+                        MFA është aktiv. Ruaji këto kode tani: do të të duhen nëse humbet telefonin.
+                    {% else %}
+                        Kodet e reja u krijuan. Kodet e vjetra nuk vlejnë më.
+                    {% endif %}
+                </p>
+
+                <div class="row row-cols-2 g-2 mb-4">
+                    {% for code in codes %}
+                        <div class="col">
+                            <div class="font-monospace text-center border rounded py-2 bg-body-tertiary">{{ code }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="alert alert-warning small">
+                    Këto kode shfaqen <strong>vetëm një herë</strong>. Çdo kod përdoret vetëm një herë.
+                    Ruaji në një vend të sigurt, jo në të njëjtin telefon me authenticator-in.
+                </div>
+
+                <a href="{% url 'accounts:profile' %}" class="btn btn-primary w-100">I ruajta kodet</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
