@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Home &middot; MFA Security App{% endblock %}
+
+{% block content %}
+<section class="hero text-center">
+    <h1 class="display-6 fw-bold">Multi-Factor Authentication për rritjen e sigurisë së përdoruesve</h1>
+    <p class="lead text-body-secondary mt-3">
+        Aplikacion web që kombinon fjalëkalimin me Time-Based One-Time Password (TOTP)
+        dhe mat sjelljen e autentikimit nën skenarë të kontrolluar.
+    </p>
+</section>
+
+<div class="row g-4 mt-2">
+    <div class="col-md-4">
+        <div class="card feature-card h-100 shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title h5">Autentikim me dy faktorë</h2>
+                <p class="card-text">Fjalëkalim dhe kod TOTP nga Google Authenticator, Microsoft Authenticator ose Authy.</p>
+                <span class="badge text-bg-secondary">Në zhvillim</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card feature-card h-100 shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title h5">Mbrojtje ndaj brute-force</h2>
+                <p class="card-text">Kufizim i tentativave dhe bllokim i përkohshëm pas dështimeve të përsëritura.</p>
+                <span class="badge text-bg-secondary">Në zhvillim</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card feature-card h-100 shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title h5">Audit dhe monitorim</h2>
+                <p class="card-text">Regjistrim i eventeve të sigurisë dhe dashboard me statistika për administratorin.</p>
+                <span class="badge text-bg-secondary">Në zhvillim</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

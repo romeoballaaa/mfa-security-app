@@ -1,0 +1,20 @@
+:root {
+    --app-accent: #0d6efd;
+}
+
+.hero {
+    padding: 3rem 0 2rem;
+}
+
+.feature-card {
+    border: 0;
+    border-top: 3px solid var(--app-accent);
+}
+
+.feature-card .card-title {
+    font-weight: 600;
+}
+
+footer {
+    font-size: 0.875rem;
+}
