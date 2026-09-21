@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "audit",
     "mfa",
     "security",
+    "dashboard",
 ]
 
 AUTH_USER_MODEL = "accounts.User"

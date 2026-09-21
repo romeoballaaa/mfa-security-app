@@ -9,6 +9,12 @@
         Aplikacion web që kombinon fjalëkalimin me Time-Based One-Time Password (TOTP)
         dhe mat sjelljen e autentikimit nën skenarë të kontrolluar.
     </p>
+    {% if not user.is_authenticated %}
+        <div class="d-flex justify-content-center gap-2 mt-4">
+            <a href="{% url 'accounts:register' %}" class="btn btn-primary">Krijo llogari</a>
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary">Kyçu</a>
+        </div>
+    {% endif %}
 </section>
 
 <div class="row g-4 mt-2">
@@ -16,8 +22,8 @@
         <div class="card feature-card h-100 shadow-sm">
             <div class="card-body">
                 <h2 class="card-title h5">Autentikim me dy faktorë</h2>
-                <p class="card-text">Fjalëkalim dhe kod TOTP nga Google Authenticator, Microsoft Authenticator ose Authy.</p>
-                <span class="badge text-bg-secondary">Në zhvillim</span>
+                <p class="card-text">Fjalëkalim dhe kod TOTP nga Google Authenticator, Microsoft Authenticator ose Authy, me recovery codes njëpërdorimshe.</p>
+                <span class="badge text-bg-success">Aktiv</span>
             </div>
         </div>
     </div>
@@ -25,8 +31,8 @@
         <div class="card feature-card h-100 shadow-sm">
             <div class="card-body">
                 <h2 class="card-title h5">Mbrojtje ndaj brute-force</h2>
-                <p class="card-text">Kufizim i tentativave dhe bllokim i përkohshëm pas dështimeve të përsëritura.</p>
-                <span class="badge text-bg-secondary">Në zhvillim</span>
+                <p class="card-text">Bllokim i përkohshëm sipas llogarisë dhe IP-së pas dështimeve të përsëritura, për fjalëkalimin dhe TOTP-në.</p>
+                <span class="badge text-bg-success">Aktiv</span>
             </div>
         </div>
     </div>
@@ -34,8 +40,8 @@
         <div class="card feature-card h-100 shadow-sm">
             <div class="card-body">
                 <h2 class="card-title h5">Audit dhe monitorim</h2>
-                <p class="card-text">Regjistrim i eventeve të sigurisë dhe dashboard me statistika për administratorin.</p>
-                <span class="badge text-bg-secondary">Në zhvillim</span>
+                <p class="card-text">Regjistër i pandryshueshëm i eventeve të sigurisë dhe dashboard me statistika për administratorin.</p>
+                <span class="badge text-bg-success">Aktiv</span>
             </div>
         </div>
     </div>

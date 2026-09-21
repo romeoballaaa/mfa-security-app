@@ -114,3 +114,21 @@
 - Login me recovery code kalon nga e njëjta sfidë dhe i njëjti kufi tentativash si TOTP.
 - Çaktivizimi dhe rigjenerimi kërkojnë fjalëkalim + TOTP (re-authentication).
 - Kufizim: rotacioni i `SECRET_KEY` pavlefëson recovery codes ekzistuese.
+## Phase 5 — Mbrojtja nga brute-force dhe siguria e session-it
+
+- `LoginAttempt` i ndarë nga audit log: të dhëna operacionale për lockout.
+- Lockout: 5 dështime / 15 min për llogari; 20 / 15 min për IP (configurable).
+- Identifikues kanonik: username dhe email i së njëjtës llogari numërohen bashkë.
+- Identifikuesit e llogarive që s'ekzistojnë ruhen si HMAC, jo tekst i lexueshëm.
+- "Regjistro pastaj numëro": pa numërues në memorie.
+- Reset vetëm pas autentikimit të plotë: fjalëkalimi i saktë nuk reseton numëruesin për llogari me MFA.
+- Gjatë bllokimit fjalëkalimi nuk verifikohet fare; tentativat e bllokuara nuk e zgjasin bllokimin.
+- Bllokimi zbatohet njëlloj për llogari që s'ekzistojnë: pa enumeration.
+- Zhbllokim manual nga admin → `ACCOUNT_UNLOCKED`. Skadimi natyral nuk gjeneron event.
+- Kufizim i njohur: me kërkesa të njëkohshme, pragu mund të kalohet me 1–2 tentativa.
+- Kufizim i njohur: lockout-i i llogarisë mund të përdoret si DoS ndaj përdoruesit legjitim.
+- Ndryshimi i fjalëkalimit mbyll session-et e tjera (`update_session_auth_hash`).
+- `SESSION_SAVE_EVERY_REQUEST`: 30 min si idle timeout.
+- CSP: `'self'` për skripte dhe stile; `img-src data:` për QR dhe ikonat e Bootstrap.
+- Permissions-Policy: kamera, mikrofoni, vendndodhja të çaktivizuara.
+- `admin_required`: kontroll server-side i rolit; regjistron `UNAUTHORIZED_ACCESS`.

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Security Dashboard &middot; MFA Security App{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end mb-4">
+    <div>
+        <h1 class="h4 mb-1">Security Dashboard</h1>
+        <p class="text-body-secondary small mb-0">Statistikat e {{ stats.period_days }} ditëve të fundit.</p>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card shadow-sm h-100"><div class="card-body">
+            <div class="stat-label">Përdorues gjithsej</div>
+            <div class="stat-value">{{ stats.total_users }}</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card stat-success shadow-sm h-100"><div class="card-body">
+            <div class="stat-label">Me MFA</div>
+            <div class="stat-value">{{ stats.mfa_users }}</div>
+            <div class="small text-body-secondary">{{ stats.mfa_adoption_pct }}% e përdoruesve</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card shadow-sm h-100"><div class="card-body">
+            <div class="stat-label">Pa MFA</div>
+            <div class="stat-value">{{ stats.non_mfa_users }}</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card stat-success shadow-sm h-100"><div class="card-body">
+            <div class="stat-label">Login të suksesshëm</div>
+            <div class="stat-value">{{ stats.successful_logins }}</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card stat-danger shadow-sm h-100"><div class="card-body">
+            <div class="stat-label">Login të dështuar</div>
+            <div class="stat-value">{{ stats.failed_logins }}</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card stat-warning shadow-sm h-100"><div class="card-body">
+            <div class="stat-label">MFA të dështuar</div>
+            <div class="stat-value">{{ stats.failed_mfa }}</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card stat-dark shadow-sm h-100"><div class="card-body">
+            <div class="stat-label">Tentativa të bllokuara</div>
+            <div class="stat-value">{{ stats.blocked_attempts }}</div>
+            <div class="small text-body-secondary">{{ stats.lockouts }} lockout &middot; {{ stats.locked_now }} tani</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card stat-danger shadow-sm h-100"><div class="card-body">
+            <div class="stat-label">Qasje e paautorizuar</div>
+            <div class="stat-value">{{ stats.unauthorized }}</div>
+            <div class="small text-body-secondary">
+                Koha mesatare MFA:
+                {% if stats.avg_mfa_seconds is not None %}{{ stats.avg_mfa_seconds }} s{% else %}-{% endif %}
+            </div>
+        </div></div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100"><div class="card-body">
+            <h2 class="h6">MFA aktive vs joaktive</h2>
+            <div class="chart-box"><canvas id="chart-mfa"></canvas></div>
+        </div></div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card shadow-sm h-100"><div class="card-body">
+            <h2 class="h6">Autentikime sipas rezultatit</h2>
+            <div class="chart-box"><canvas id="chart-auth"></canvas></div>
+        </div></div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card shadow-sm h-100"><div class="card-body">
+            <h2 class="h6">Login-e në 14 ditët e fundit</h2>
+            <div class="chart-box"><canvas id="chart-per-day"></canvas></div>
+        </div></div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card shadow-sm h-100"><div class="card-body">
+            <h2 class="h6">Evente sipas kategorisë</h2>
+            <div class="chart-box"><canvas id="chart-by-type"></canvas></div>
+        </div></div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h2 class="h6 mb-3">20 eventet e fundit</h2>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Përdoruesi</th>
+                        <th>Eventi</th>
+                        <th>Rezultati</th>
+                        <th>Arsyeja</th>
+                        <th>IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in recent_events %}
+                        <tr>
+                            <td class="small">{{ event.created_at|date:"d/m/Y H:i:s" }}</td>
+                            <td class="small">{{ event.user.username|default:"-" }}</td>
+                            <td class="small">{{ event.get_event_type_display }}</td>
+                            <td class="small">
+                                {% if event.success %}
+                                    <span class="badge text-bg-success">OK</span>
+                                {% else %}
+                                    <span class="badge text-bg-danger">Dështim</span>
+                                {% endif %}
+                            </td>
+                            <td class="small">{{ event.metadata.reason|default:"-" }}</td>
+                            <td class="small">{{ event.ip_address|default:"-" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="6" class="text-body-secondary small">Nuk ka evente.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{{ charts|json_script:"dashboard-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'vendor/chartjs/chart.umd.js' %}"></script>
+<script src="{% static 'js/admin_dashboard.js' %}"></script>
+{% endblock %}

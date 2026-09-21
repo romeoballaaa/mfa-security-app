@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Historiku i sigurisë &middot; MFA Security App{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end mb-3 gap-2">
+    <div>
+        <h1 class="h4 mb-1">Historiku i sigurisë</h1>
+        <p class="text-body-secondary small mb-0">Të gjitha eventet e sigurisë për llogarinë tënde.</p>
+    </div>
+
+    <form method="get" class="d-flex gap-2">
+        <select name="type" class="form-select form-select-sm">
+            <option value="">Të gjitha eventet</option>
+            {% for value, label in event_types %}
+                <option value="{{ value }}" {% if value == selected %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-sm btn-primary">Filtro</button>
+    </form>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Eventi</th>
+                        <th>Rezultati</th>
+                        <th>Detaje</th>
+                        <th>IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in page %}
+                        <tr>
+                            <td class="small">{{ event.created_at|date:"d/m/Y H:i:s" }}</td>
+                            <td class="small">{{ event.get_event_type_display }}</td>
+                            <td class="small">
+                                {% if event.success %}
+                                    <span class="badge text-bg-success">OK</span>
+                                {% else %}
+                                    <span class="badge text-bg-danger">Dështim</span>
+                                {% endif %}
+                            </td>
+                            <td class="small text-body-secondary">
+                                {{ event.metadata.method|default:"" }}
+                                {% if event.metadata.reason %}&middot; {{ event.metadata.reason }}{% endif %}
+                            </td>
+                            <td class="small">{{ event.ip_address|default:"-" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="5" class="text-body-secondary small">Nuk ka evente.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page.paginator.num_pages > 1 %}
+            <nav class="mt-3">
+                <ul class="pagination pagination-sm mb-0">
+                    {% if page.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page.previous_page_number }}{% if selected %}&type={{ selected }}{% endif %}">Mbrapa</a>
+                        </li>
+                    {% endif %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Faqja {{ page.number }} nga {{ page.paginator.num_pages }}</span>
+                    </li>
+                    {% if page.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page.next_page_number }}{% if selected %}&type={{ selected }}{% endif %}">Para</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

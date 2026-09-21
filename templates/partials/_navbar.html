@@ -7,8 +7,7 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="mainNav">
-                     
-              <ul class="navbar-nav ms-auto align-items-lg-center">
+            <ul class="navbar-nav ms-auto align-items-lg-center">
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'home' %}">Home</a>
                 </li>
@@ -17,11 +16,17 @@
                         <a class="nav-link" href="{% url 'accounts:profile' %}">Profili</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard:history' %}">Historiku</a>
+                    </li>
+                    {% if user.is_app_admin %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard:admin' %}">Security Dashboard</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
                         <form method="post" action="{% url 'accounts:logout' %}" class="d-inline">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-light ms-lg-2">
-                                Dil
-                            </button>
+                            <button type="submit" class="btn btn-sm btn-outline-light ms-lg-2">Dil</button>
                         </form>
                     </li>
                 {% else %}
