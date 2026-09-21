@@ -191,9 +191,59 @@ Krijo një folder:
 
 ## Përmbledhje: puna e përditshme
 
-1. Hap VS Code te projekti
-2. Aktivizo venv:            .\venv\Scripts\Activate.ps1
-3. Nis serverin:            python manage.py runserver
-4. Puno / testo
-5. Ndalo serverin:          Ctrl+C
-6. Ruaj në Git:             git add .  →  git commit -m "..."
+### A. Vetëm përdorim ose demonstrim
+
+    Dopio-klik te start.bat
+
+Browser-i hapet vetë te http://127.0.0.1:8000/
+Mbyll dritaren e zezë kur mbaron.
+
+### B. Punë me terminal
+
+Hapi 1 — Hap projektin në VS Code, pastaj terminalin: Terminal → New Terminal
+
+Hapi 2 — Aktivizo venv:
+
+    .\venv\Scripts\Activate.ps1
+
+Hapi 3 — Nis serverin:
+
+    python manage.py runserver
+
+Hap: http://127.0.0.1:8000/
+
+Hapi 4 — Punët e mëposhtme bëji në një terminal të dytë (butoni + te terminali),
+që serveri të mbetet aktiv në të parin:
+
+  Kontrollo për gabime:
+
+    python manage.py check
+
+  Ekzekuto testet:
+
+    python manage.py test --settings=config.settings.test --noinput
+
+  Testet me coverage:
+
+    coverage run manage.py test --settings=config.settings.test --noinput
+    coverage report
+
+  Ekzekuto eksperimentet A-H:
+
+    python manage.py run_experiments --settings=config.settings.research
+
+  Shiko rezultatin e fundit të eksperimenteve:
+
+    Get-ChildItem research\results\*.csv | Select-Object -Last 1 | Get-Content
+
+  Pas ndryshimeve te models.py:
+
+    python manage.py makemigrations
+    python manage.py migrate
+
+Hapi 5 — Ndalo serverin: Ctrl+C në terminalin e parë
+
+Hapi 6 — Ruaj në Git:
+
+    git add .
+    git commit -m "Pershkrimi i ndryshimit"
