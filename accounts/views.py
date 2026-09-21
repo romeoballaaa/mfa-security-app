@@ -3,11 +3,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
-from django.views.decorators.cache import never_cache
 from django.views import View
+from django.views.decorators.cache import never_cache
 
 from audit.models import SecurityEvent
 from audit.services import record_event
+from mfa.services.totp import user_has_mfa
 
 from .forms import LoginForm, RegistrationForm
 
@@ -130,5 +131,8 @@ class ProfileView(View):
         return render(
             request,
             self.template_name,
-            {"recent_events": recent_events},
+            {
+                "recent_events": recent_events,
+                "mfa_enabled": user_has_mfa(request.user),
+            },
         )

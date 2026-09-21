@@ -25,8 +25,18 @@
                     <dd class="col-7">{{ user.last_login|date:"d/m/Y H:i" }}</dd>
 
                     <dt class="col-5">MFA</dt>
-                    <dd class="col-7"><span class="badge text-bg-secondary">Jo aktiv</span></dd>
+                    <dd class="col-7">
+                        {% if mfa_enabled %}
+                            <span class="badge text-bg-success">Aktiv</span>
+                        {% else %}
+                            <span class="badge text-bg-secondary">Jo aktiv</span>
+                        {% endif %}
+                    </dd>
                 </dl>
+
+                {% if not mfa_enabled %}
+                    <a href="{% url 'mfa:setup' %}" class="btn btn-primary btn-sm mt-3">Aktivizo MFA</a>
+                {% endif %}
             </div>
         </div>
     </div>
