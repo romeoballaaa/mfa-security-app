@@ -132,3 +132,18 @@
 - CSP: `'self'` për skripte dhe stile; `img-src data:` për QR dhe ikonat e Bootstrap.
 - Permissions-Policy: kamera, mikrofoni, vendndodhja të çaktivizuara.
 - `admin_required`: kontroll server-side i rolit; regjistron `UNAUTHORIZED_ACCESS`.
+## Phase 6 — Historiku i sigurisë
+
+- Faqe me të gjitha eventet e përdoruesit, me filtër dhe pagination (25/faqe).
+- Filtri pranon vetëm vlera nga lista e eventeve; çdo vlerë tjetër injorohet.
+
+## Phase 7 — Dashboard-et
+
+- Admin Security Dashboard: vetëm për rolin ADMIN (`admin_required`, server-side).
+- Statistikat llogariten nga audit log-u dhe `MFADevice`; dashboard-i nuk ka tabela të veta.
+- Tentativat e bllokuara numërohen veçmas nga dështimet e zakonshme.
+- MFA adoption rate, koha mesatare MFA (nga `duration_ms`).
+- Chart.js 4.4.1 lokal; të dhënat me `json_script` → CSP mbetet `script-src 'self'`.
+- 4 grafikë: MFA aktive/joaktive, autentikime sipas rezultatit, login-e në 14 ditë, evente sipas kategorisë.
+- Scenario H (test manual): user pa rol ADMIN → 403 + `UNAUTHORIZED_ACCESS` me `path`.
+- Shënim: "MFA adoption rate" mbi llogari testimi është parametër i mjedisit, jo gjetje kërkimore.

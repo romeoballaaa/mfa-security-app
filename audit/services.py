@@ -7,6 +7,7 @@ ALLOWED_METADATA_KEYS = {
     "method",
     "identifier_hint",
     "duration_ms",
+    "path",
     "scenario",
     "run_id",
 }
