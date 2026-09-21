@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "accounts",
     "audit",
     "mfa",
+    "security",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -38,6 +39,7 @@ LOGOUT_REDIRECT_URL = "home"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "security.middleware.SecurityHeadersMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -100,6 +102,7 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_AGE = 1800
+SESSION_SAVE_EVERY_REQUEST = True
 
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = "Lax"
@@ -108,9 +111,27 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
 X_FRAME_OPTIONS = "DENY"
 
+CSP_POLICY = (
+    "default-src 'self'; "
+    "script-src 'self'; "
+    "style-src 'self'; "
+    "img-src 'self' data:; "
+    "font-src 'self'; "
+    "connect-src 'self'; "
+    "object-src 'none'; "
+    "base-uri 'self'; "
+    "form-action 'self'; "
+    "frame-ancestors 'none'"
+)
+PERMISSIONS_POLICY = "camera=(), microphone=(), geolocation=(), payment=()"
+
 MFA_ENCRYPTION_KEYS = env.list("MFA_ENCRYPTION_KEYS", default=[])
 MFA_ISSUER_NAME = env("MFA_ISSUER_NAME", default="MFA Security App")
 MFA_TOTP_VALID_WINDOW = env.int("MFA_TOTP_VALID_WINDOW", default=1)
 MFA_RECOVERY_CODE_COUNT = env.int("MFA_RECOVERY_CODE_COUNT", default=10)
 MFA_CHALLENGE_TIMEOUT_SECONDS = env.int("MFA_CHALLENGE_TIMEOUT_SECONDS", default=300)
 MFA_CHALLENGE_MAX_ATTEMPTS = env.int("MFA_CHALLENGE_MAX_ATTEMPTS", default=5)
+
+LOCKOUT_MAX_FAILURES = env.int("LOCKOUT_MAX_FAILURES", default=5)
+LOCKOUT_MAX_FAILURES_PER_IP = env.int("LOCKOUT_MAX_FAILURES_PER_IP", default=20)
+LOCKOUT_WINDOW_SECONDS = env.int("LOCKOUT_WINDOW_SECONDS", default=900)

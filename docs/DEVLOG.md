@@ -104,3 +104,13 @@
 - `duration_ms`: koha nga fjalëkalimi deri te TOTP-ja e pranuar.
 - Dobësi e gjetur dhe e mbyllur: `/admin/login/` anashkalonte MFA. Ridrejtuar te login-i ynë.
 - Test: pas fjalëkalimit, qasje direkte te profili → ridrejtim te login-i.
+## Phase 4D — Recovery codes dhe çaktivizimi
+
+- 10 kode njëpërdorimshe, 10 karaktere (~49 bita entropi), gjeneruar me `secrets`.
+- Ruhen si HMAC-SHA256 (`salted_hmac` i Django-s), jo PBKDF2: kodet kanë entropi të lartë, jo si fjalëkalimet.
+- Shfaqen vetëm një herë, direkt në përgjigje; nuk ruhen askund të lexueshëm.
+- Përdorimi atomik: `UPDATE ... WHERE used_at IS NULL`.
+- Rigjenerimi i pavlefëson kodet e vjetra.
+- Login me recovery code kalon nga e njëjta sfidë dhe i njëjti kufi tentativash si TOTP.
+- Çaktivizimi dhe rigjenerimi kërkojnë fjalëkalim + TOTP (re-authentication).
+- Kufizim: rotacioni i `SECRET_KEY` pavlefëson recovery codes ekzistuese.

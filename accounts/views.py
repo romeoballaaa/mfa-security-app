@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.utils.decorators import method_decorator
@@ -11,8 +11,17 @@ from audit.services import record_event
 from mfa.services.challenge import clear_challenge, start_challenge
 from mfa.services.recovery import remaining_recovery_codes
 from mfa.services.totp import user_has_mfa
+from security.models import LoginAttempt
+from security.services.lockout import (
+    LOCKOUT_MESSAGE,
+    canonical_identifier,
+    check_lock,
+    identifier_for_user,
+    record_failure,
+    record_success,
+)
 
-from .forms import LoginForm, RegistrationForm
+from .forms import LoginForm, RegistrationForm, StyledPasswordChangeForm
 
 GENERIC_LOGIN_ERROR = "Kredencialet nuk janë të sakta."
 
@@ -71,15 +80,21 @@ class LoginView(View):
         form = LoginForm(request.POST)
 
         if not form.is_valid():
-            return self._fail(request, form, "", "invalid_form")
+            return self._fail(request, "", "invalid_form")
 
-        identifier = form.cleaned_data["identifier"]
+        raw_identifier = form.cleaned_data["identifier"]
         password = form.cleaned_data["password"]
+        identifier = canonical_identifier(raw_identifier)
 
-        user = authenticate(request, username=identifier, password=password)
+        lock_reason = check_lock(identifier, request)
+        if lock_reason:
+            return self._blocked(request, raw_identifier, lock_reason)
+
+        user = authenticate(request, username=raw_identifier, password=password)
 
         if user is None:
-            return self._fail(request, form, identifier, "bad_credentials")
+            record_failure(identifier, request, LoginAttempt.Stage.PASSWORD)
+            return self._fail(request, raw_identifier, "bad_credentials")
 
         if user_has_mfa(user):
             start_challenge(request, user)
@@ -91,6 +106,7 @@ class LoginView(View):
             )
             return redirect("mfa:verify")
 
+        record_success(user, request, LoginAttempt.Stage.PASSWORD)
         login(request, user)
 
         record_event(
@@ -103,7 +119,7 @@ class LoginView(View):
         messages.success(request, f"Mirë se erdhe, {user.username}.")
         return redirect("accounts:profile")
 
-    def _fail(self, request, form, identifier, reason):
+    def _fail(self, request, raw_identifier, reason):
         record_event(
             SecurityEvent.EventType.LOGIN_FAILED,
             request=request,
@@ -112,11 +128,26 @@ class LoginView(View):
             metadata={
                 "stage": "PASSWORD",
                 "reason": reason,
-                "identifier_hint": _identifier_hint(identifier),
+                "identifier_hint": _identifier_hint(raw_identifier),
             },
         )
         messages.error(request, GENERIC_LOGIN_ERROR)
-        return render(request, self.template_name, {"form": form})
+        return render(request, self.template_name, {"form": LoginForm()})
+
+    def _blocked(self, request, raw_identifier, lock_reason):
+        record_event(
+            SecurityEvent.EventType.LOGIN_FAILED,
+            request=request,
+            user=None,
+            success=False,
+            metadata={
+                "stage": "PASSWORD",
+                "reason": lock_reason,
+                "identifier_hint": _identifier_hint(raw_identifier),
+            },
+        )
+        messages.error(request, LOCKOUT_MESSAGE)
+        return render(request, self.template_name, {"form": LoginForm()})
 
 
 class LogoutView(View):
@@ -151,3 +182,35 @@ class ProfileView(View):
                 "recovery_remaining": remaining_recovery_codes(request.user) if mfa_enabled else 0,
             },
         )
+
+
+@method_decorator(never_cache, name="dispatch")
+@method_decorator(login_required, name="dispatch")
+class PasswordChangeView(View):
+    template_name = "accounts/password_change.html"
+
+    def get(self, request):
+        return render(request, self.template_name, {"form": StyledPasswordChangeForm(request.user)})
+
+    def post(self, request):
+        identifier = identifier_for_user(request.user)
+        if check_lock(identifier, request):
+            messages.error(request, LOCKOUT_MESSAGE)
+            return redirect("accounts:profile")
+
+        form = StyledPasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            record_event(
+                SecurityEvent.EventType.PASSWORD_CHANGED,
+                request=request,
+                user=user,
+            )
+            messages.success(request, "Fjalëkalimi u ndryshua. Sesionet e tjera u mbyllën.")
+            return redirect("accounts:profile")
+
+        if "old_password" in form.errors:
+            record_failure(identifier, request, LoginAttempt.Stage.REAUTH)
+
+        return render(request, self.template_name, {"form": form})

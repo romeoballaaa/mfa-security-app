@@ -51,14 +51,15 @@
                     {% endif %}
                 </dl>
 
-                {% if mfa_enabled %}
-                    <div class="d-flex flex-wrap gap-2">
+                <div class="d-flex flex-wrap gap-2">
+                    {% if mfa_enabled %}
                         <a href="{% url 'mfa:regenerate' %}" class="btn btn-outline-primary btn-sm">Rigjenero recovery codes</a>
                         <a href="{% url 'mfa:disable' %}" class="btn btn-outline-danger btn-sm">Çaktivizo MFA</a>
-                    </div>
-                {% else %}
-                    <a href="{% url 'mfa:setup' %}" class="btn btn-primary btn-sm">Aktivizo MFA</a>
-                {% endif %}
+                    {% else %}
+                        <a href="{% url 'mfa:setup' %}" class="btn btn-primary btn-sm">Aktivizo MFA</a>
+                    {% endif %}
+                    <a href="{% url 'accounts:password_change' %}" class="btn btn-outline-secondary btn-sm">Ndrysho fjalëkalimin</a>
+                </div>
             </div>
         </div>
     </div>

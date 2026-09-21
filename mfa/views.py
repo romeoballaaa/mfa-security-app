@@ -10,6 +10,14 @@ from django.views.decorators.cache import never_cache
 
 from audit.models import SecurityEvent
 from audit.services import record_event
+from security.models import LoginAttempt
+from security.services.lockout import (
+    LOCKOUT_MESSAGE,
+    check_lock,
+    identifier_for_user,
+    record_failure,
+    record_success,
+)
 
 from .forms import ReauthForm, RecoveryCodeForm, TOTPCodeForm
 from .models import RecoveryCode
@@ -44,11 +52,12 @@ CHALLENGE_EXPIRED = "Verifikimi skadoi ose nuk ekziston. Kyçu përsëri."
 REAUTH_ERROR = "Fjalëkalimi ose kodi nuk është i saktë."
 
 
-def _complete_mfa_login(request, user, method):
+def _complete_mfa_login(request, user, method, stage):
     elapsed = challenge_elapsed_seconds(request) or 0
     backend = get_challenge_backend(request)
     clear_challenge(request)
 
+    record_success(user, request, stage)
     login(request, user, backend=backend)
 
     record_event(
@@ -63,7 +72,21 @@ def _complete_mfa_login(request, user, method):
     )
 
 
-def _handle_challenge_failure(request, user, reason, template_name, form_class):
+def _locked_challenge(request, user):
+    clear_challenge(request)
+    record_event(
+        SecurityEvent.EventType.MFA_CHALLENGE_FAILED,
+        request=request,
+        user=user,
+        success=False,
+        metadata={"stage": "LOGIN", "reason": "locked"},
+    )
+    messages.error(request, LOCKOUT_MESSAGE)
+    return redirect("accounts:login")
+
+
+def _handle_challenge_failure(request, user, reason, stage, template_name, form_class):
+    record_failure(identifier_for_user(user), request, stage)
     attempts = register_failed_attempt(request)
     record_event(
         SecurityEvent.EventType.MFA_CHALLENGE_FAILED,
@@ -169,6 +192,9 @@ class MFAVerifyView(View):
             messages.error(request, CHALLENGE_EXPIRED)
             return redirect("accounts:login")
 
+        if check_lock(identifier_for_user(user), request):
+            return _locked_challenge(request, user)
+
         form = TOTPCodeForm(request.POST)
         result = verify_code(device, form.cleaned_data["code"]) if form.is_valid() else VERIFY_INVALID
 
@@ -179,11 +205,13 @@ class MFAVerifyView(View):
                 user=user,
                 metadata={"stage": "LOGIN", "method": "totp"},
             )
-            _complete_mfa_login(request, user, "password+totp")
+            _complete_mfa_login(request, user, "password+totp", LoginAttempt.Stage.TOTP)
             messages.success(request, f"Mirë se erdhe, {user.username}.")
             return redirect("accounts:profile")
 
-        return _handle_challenge_failure(request, user, result, self.template_name, TOTPCodeForm)
+        return _handle_challenge_failure(
+            request, user, result, LoginAttempt.Stage.TOTP, self.template_name, TOTPCodeForm
+        )
 
 
 @method_decorator(never_cache, name="dispatch")
@@ -208,6 +236,9 @@ class MFARecoveryVerifyView(View):
             messages.error(request, CHALLENGE_EXPIRED)
             return redirect("accounts:login")
 
+        if check_lock(identifier_for_user(user), request):
+            return _locked_challenge(request, user)
+
         form = RecoveryCodeForm(request.POST)
         if form.is_valid() and use_recovery_code(user, form.cleaned_data["code"]):
             record_event(
@@ -216,7 +247,7 @@ class MFARecoveryVerifyView(View):
                 user=user,
                 metadata={"stage": "LOGIN", "method": "recovery"},
             )
-            _complete_mfa_login(request, user, "password+recovery")
+            _complete_mfa_login(request, user, "password+recovery", LoginAttempt.Stage.RECOVERY)
             remaining = remaining_recovery_codes(user)
             messages.warning(
                 request,
@@ -225,7 +256,12 @@ class MFARecoveryVerifyView(View):
             return redirect("accounts:profile")
 
         return _handle_challenge_failure(
-            request, user, "invalid_recovery_code", self.template_name, RecoveryCodeForm
+            request,
+            user,
+            "invalid_recovery_code",
+            LoginAttempt.Stage.RECOVERY,
+            self.template_name,
+            RecoveryCodeForm,
         )
 
 
@@ -250,6 +286,11 @@ class MFADisableView(View):
         if device is None:
             return redirect("accounts:profile")
 
+        identifier = identifier_for_user(request.user)
+        if check_lock(identifier, request):
+            messages.error(request, LOCKOUT_MESSAGE)
+            return redirect("accounts:profile")
+
         form = ReauthForm(request.POST)
         result = _reauthenticate(request.user, device, form)
 
@@ -266,6 +307,7 @@ class MFADisableView(View):
             messages.success(request, "MFA u çaktivizua.")
             return redirect("accounts:profile")
 
+        record_failure(identifier, request, LoginAttempt.Stage.REAUTH)
         record_event(
             SecurityEvent.EventType.MFA_CHALLENGE_FAILED,
             request=request,
@@ -298,6 +340,11 @@ class RecoveryCodesRegenerateView(View):
         if device is None:
             return redirect("accounts:profile")
 
+        identifier = identifier_for_user(request.user)
+        if check_lock(identifier, request):
+            messages.error(request, LOCKOUT_MESSAGE)
+            return redirect("accounts:profile")
+
         form = ReauthForm(request.POST)
         result = _reauthenticate(request.user, device, form)
 
@@ -314,6 +361,7 @@ class RecoveryCodesRegenerateView(View):
                 {"codes": codes, "first_time": False},
             )
 
+        record_failure(identifier, request, LoginAttempt.Stage.REAUTH)
         record_event(
             SecurityEvent.EventType.MFA_CHALLENGE_FAILED,
             request=request,
