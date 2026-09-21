@@ -147,3 +147,20 @@
 - 4 grafikë: MFA aktive/joaktive, autentikime sipas rezultatit, login-e në 14 ditë, evente sipas kategorisë.
 - Scenario H (test manual): user pa rol ADMIN → 403 + `UNAUTHORIZED_ACCESS` me `path`.
 - Shënim: "MFA adoption rate" mbi llogari testimi është parametër i mjedisit, jo gjetje kërkimore.
+
+## Phase 8 — Testet automatike
+
+- 66 teste, të gjitha kaluan (7.3 s, PostgreSQL test database).
+- Mbulohen rastet negative: replay, kod i skaduar/i pasaktë, reuse i recovery code, CSRF pa token, 403, lockout sipas llogarisë dhe IP-së.
+- Testet zbuluan një mangësi reale: eventi UNAUTHORIZED_ACCESS ruhej pa `path` sepse lista e bardhë e metadata-s nuk ishte përditësuar. U rregullua.
+- Gjatë ekzekutimit të parë u gjetën vetëm 39 teste: mungonin file-t e testeve të `mfa`. Numri i testeve të gjetura është kontroll i vetë suitës.
+- Rezultatet: docs/test-results.txt. Coverage: [plotëso nga `coverage report`].
+
+## Phase 9 — Eksperimentet A-H
+
+- Komandë `run_experiments`, vetëm me RESEARCH_MODE, brenda procesit me test client.
+- run_id unik për çdo ekzekutim; llogaritë e testit fshihen para dhe pas.
+- Rezultatet: A/C/F breaches=0; D bllokim në 6; E anulim në 5; G 5 dështime; H 403 në 20/20.
+- Krahasimi A vs C: fjalëkalim i njëjtë, por MFA e ndalon hyrjen te C. Prova sasiore e vlerës së MFA.
+- avg_ms (Scenario B) matje brenda procesit; koha reale e përdoruesit nga duration_ms në audit.
+- Kufizim: successes/reached_second_factor kufizohen nga anti-replay dhe throttling në ekzekutim të shpejtë (sjellje e saktë e sistemit).

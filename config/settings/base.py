@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "mfa",
     "security",
     "dashboard",
+    "research",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -136,3 +137,5 @@ MFA_CHALLENGE_MAX_ATTEMPTS = env.int("MFA_CHALLENGE_MAX_ATTEMPTS", default=5)
 LOCKOUT_MAX_FAILURES = env.int("LOCKOUT_MAX_FAILURES", default=5)
 LOCKOUT_MAX_FAILURES_PER_IP = env.int("LOCKOUT_MAX_FAILURES_PER_IP", default=20)
 LOCKOUT_WINDOW_SECONDS = env.int("LOCKOUT_WINDOW_SECONDS", default=900)
+
+RESEARCH_MODE = env.bool("RESEARCH_MODE", default=False)

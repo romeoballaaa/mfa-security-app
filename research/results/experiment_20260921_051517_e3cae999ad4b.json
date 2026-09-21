@@ -1,0 +1,61 @@
+{
+  "run_id": "e3cae999ad4b",
+  "started": "2026-09-21T05:15:17.318889+00:00",
+  "results": [
+    {
+      "attempts": 20,
+      "breaches": 0,
+      "note": "Fjalekalim i gabuar, pa MFA.",
+      "scenario": "A",
+      "title": "Password-only authentication"
+    },
+    {
+      "attempts": 2,
+      "successes": 2,
+      "avg_ms": 1148.2,
+      "note": "Kredenciale te sakta + TOTP i sakte (kode unike).",
+      "scenario": "B",
+      "title": "Password + MFA"
+    },
+    {
+      "attempts": 20,
+      "reached_second_factor": 5,
+      "breaches": 0,
+      "note": "Fjalekalim i sakte, TOTP i gabuar.",
+      "scenario": "C",
+      "title": "Compromised password, no TOTP"
+    },
+    {
+      "attempts_until_block": 6,
+      "note": "Bllokim sipas llogarise pas deshtimeve.",
+      "scenario": "D",
+      "title": "Repeated incorrect passwords"
+    },
+    {
+      "attempts_until_cancel": 5,
+      "note": "Anulim i sfides pas TOTP-ve te gabuar.",
+      "scenario": "E",
+      "title": "Repeated incorrect TOTP"
+    },
+    {
+      "attempts": 20,
+      "breaches": 0,
+      "note": "Kod TOTP 5 min i vjeter.",
+      "scenario": "F",
+      "title": "Expired/invalid TOTP"
+    },
+    {
+      "failures_allowed_before_lock": 5,
+      "note": "Numri i deshtimeve para bllokimit te llogarise.",
+      "scenario": "G",
+      "title": "Account lockout / throttling"
+    },
+    {
+      "attempts": 20,
+      "forbidden": 20,
+      "note": "User pa rol ADMIN kunder dashboard-it.",
+      "scenario": "H",
+      "title": "Unauthorized resource access"
+    }
+  ]
+}
