@@ -1,2 +1,10 @@
+# ============================================================
+# Varesite shtese vetem per zhvillim dhe testim
+# Instalim: pip install -r requirements-dev.txt
+# ============================================================
+
+# Perfshin te gjitha varesite e prodhimit
 -r requirements.txt
+
+# Matja e mbulimit te kodit nga testet
 coverage>=7.6
