@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Profili &middot; MFA Security App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-5">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h1 class="h5 mb-3">Profili</h1>
+                <dl class="row mb-0 small">
+                    <dt class="col-5">Username</dt>
+                    <dd class="col-7">{{ user.username }}</dd>
+
+                    <dt class="col-5">Email</dt>
+                    <dd class="col-7">{{ user.email }}</dd>
+
+                    <dt class="col-5">Roli</dt>
+                    <dd class="col-7">{{ user.get_role_display }}</dd>
+
+                    <dt class="col-5">Regjistruar më</dt>
+                    <dd class="col-7">{{ user.date_joined|date:"d/m/Y H:i" }}</dd>
+
+                    <dt class="col-5">Hyrja e fundit</dt>
+                    <dd class="col-7">{{ user.last_login|date:"d/m/Y H:i" }}</dd>
+
+                    <dt class="col-5">MFA</dt>
+                    <dd class="col-7"><span class="badge text-bg-secondary">Jo aktiv</span></dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h6 mb-3">Aktiviteti i fundit</h2>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Eventi</th>
+                                <th>IP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in recent_events %}
+                                <tr>
+                                    <td class="small">{{ event.created_at|date:"d/m/Y H:i:s" }}</td>
+                                    <td class="small">{{ event.get_event_type_display }}</td>
+                                    <td class="small">{{ event.ip_address|default:"-" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-body-secondary small">Nuk ka evente.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
