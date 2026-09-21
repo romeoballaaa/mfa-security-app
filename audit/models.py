@@ -8,6 +8,7 @@ class SecurityEvent(models.Model):
         LOGIN_SUCCESS = "LOGIN_SUCCESS", "Login success"
         LOGIN_FAILED = "LOGIN_FAILED", "Login failed"
         LOGOUT = "LOGOUT", "Logout"
+        MFA_CHALLENGE_ISSUED = "MFA_CHALLENGE_ISSUED", "MFA challenge issued"
         MFA_CHALLENGE_SUCCESS = "MFA_CHALLENGE_SUCCESS", "MFA challenge success"
         MFA_CHALLENGE_FAILED = "MFA_CHALLENGE_FAILED", "MFA challenge failed"
         MFA_ENABLED = "MFA_ENABLED", "MFA enabled"

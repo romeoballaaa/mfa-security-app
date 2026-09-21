@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Verifikimi me dy faktorë &middot; MFA Security App{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h1 class="h4 mb-1">Verifikimi me dy faktorë</h1>
+                <p class="text-body-secondary small mb-4">
+                    Faktori i dytë: fut kodin 6-shifror nga aplikacioni authenticator.
+                </p>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <label for="{{ form.code.id_for_label }}" class="form-label">{{ form.code.label }}</label>
+                    {{ form.code }}
+                    <button type="submit" class="btn btn-primary w-100 mt-3">Verifiko</button>
+                </form>
+
+                <p class="text-center small mt-3 mb-0">
+                    <a href="{% url 'accounts:login' %}">Anulo dhe kthehu te login-i</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

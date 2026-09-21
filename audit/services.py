@@ -6,6 +6,7 @@ ALLOWED_METADATA_KEYS = {
     "stage",
     "method",
     "identifier_hint",
+    "duration_ms",
     "scenario",
     "run_id",
 }

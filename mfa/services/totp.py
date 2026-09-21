@@ -15,11 +15,19 @@ from mfa.services.crypto import decrypt_secret, encrypt_secret
 
 TOTP_DIGITS = 6
 
+VERIFY_OK = "ok"
+VERIFY_INVALID = "invalid_code"
+VERIFY_REPLAY = "replay"
+
 
 def user_has_mfa(user):
     if not user.is_authenticated:
         return False
     return MFADevice.objects.filter(user=user, is_confirmed=True).exists()
+
+
+def get_confirmed_device(user):
+    return MFADevice.objects.filter(user=user, is_confirmed=True).first()
 
 
 def get_or_create_pending_device(user):
@@ -78,17 +86,23 @@ def match_totp_step(secret, code, now=None):
     return None
 
 
-def verify_and_consume(device, code, now=None):
+def verify_code(device, code, now=None):
     step = match_totp_step(get_secret(device), code, now=now)
     if step is None:
-        return False
+        return VERIFY_INVALID
 
     updated = (
         MFADevice.objects.filter(pk=device.pk)
         .filter(Q(last_used_step__isnull=True) | Q(last_used_step__lt=step))
         .update(last_used_step=step)
     )
-    return updated == 1
+    if updated == 1:
+        return VERIFY_OK
+    return VERIFY_REPLAY
+
+
+def verify_and_consume(device, code, now=None):
+    return verify_code(device, code, now=now) == VERIFY_OK
 
 
 def confirm_device(device, code):

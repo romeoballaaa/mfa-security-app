@@ -8,6 +8,7 @@ from django.views.decorators.cache import never_cache
 
 from audit.models import SecurityEvent
 from audit.services import record_event
+from mfa.services.challenge import clear_challenge, start_challenge
 from mfa.services.totp import user_has_mfa
 
 from .forms import LoginForm, RegistrationForm
@@ -52,12 +53,14 @@ class RegisterView(View):
         return render(request, self.template_name, {"form": form})
 
 
+@method_decorator(never_cache, name="dispatch")
 class LoginView(View):
     template_name = "accounts/login.html"
 
     def get(self, request):
         if request.user.is_authenticated:
             return redirect("accounts:profile")
+        clear_challenge(request)
         return render(request, self.template_name, {"form": LoginForm()})
 
     def post(self, request):
@@ -76,6 +79,16 @@ class LoginView(View):
 
         if user is None:
             return self._fail(request, form, identifier, "bad_credentials")
+
+        if user_has_mfa(user):
+            start_challenge(request, user)
+            record_event(
+                SecurityEvent.EventType.MFA_CHALLENGE_ISSUED,
+                request=request,
+                user=user,
+                metadata={"stage": "PASSWORD", "method": "totp"},
+            )
+            return redirect("mfa:verify")
 
         login(request, user)
 
